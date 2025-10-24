@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 const app = express();
-
+import { errorHandler } from "./middlewares/errorHandler.js";
 // common middlewares
 // configure  cors frontend url in .env
 app.use(
@@ -23,4 +23,6 @@ import blogsRouter from "./routes/blog.route.js";
 app.use("/api/v1/heathCheck", heathCheckRouter);
 app.use("/api/v1/blogs", blogsRouter);
 
+// error handler should be the last middleware
+app.use(errorHandler);
 export { app };
