@@ -1,16 +1,30 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../contants.js";
+
+let isConnected = false; // ✅ track connection state (important for Vercel)
+
 const connectDB = async () => {
+  if (isConnected) {
+    console.log("⚡ MongoDB already connected");
+    return;
+  }
+
   try {
     const connectionInstance = await mongoose.connect(
-      `${process.env.MONGO_URI}/${DB_NAME}`
+      `${process.env.MONGO_URI}/${DB_NAME}`,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
     );
+
+    isConnected = true;
     console.log(
-      `\n MongoDB connected! DB Host ${connectionInstance.connection.host}`
+      `✅ MongoDB connected | Host: ${connectionInstance.connection.host}`
     );
   } catch (error) {
-    console.log("MongoDB connection Error");
-    process.exit(1);
+    console.error("❌ MongoDB connection failed:", error.message);
+    throw new Error("Database connection failed");
   }
 };
 
