@@ -1,8 +1,7 @@
-import app from "../src/app.js";
+import { app } from "../src/app.js";
 import connectDB from "../src/db/index.js";
-// connect to db
 
+// Connect to MongoDB once before exporting the handler
 await connectDB();
 
-// vercel entry point
 export default app;
