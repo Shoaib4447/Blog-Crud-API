@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../contants.js";
 
-let isConnected = false; // Track connection state
+let isConnected = false;
 
 const connectDB = async () => {
   if (isConnected) {
@@ -18,8 +18,8 @@ const connectDB = async () => {
       `MongoDB connected ✅ | Host: ${connectionInstance.connection.host}`
     );
   } catch (error) {
-    console.log("❌ MongoDB connection error:", error.message);
-    process.exit(1);
+    console.error("❌ MongoDB connection error:", error.message);
+    throw error; // important: throw instead of exit
   }
 };
 
