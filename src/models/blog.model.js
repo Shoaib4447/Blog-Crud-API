@@ -17,6 +17,12 @@ const blogSchema = new Schema(
       trim: true,
       index: true,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Creator is required"],
+      index: true,
+    },
   },
   { timestamps: true }
 );

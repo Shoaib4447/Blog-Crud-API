@@ -6,7 +6,7 @@ import {
   updateBlog,
   deleteBlog,
 } from "../controllers/blog.controller.js";
-
+import { authenticate } from "../middlewares/authMiddleware.js";
 // ----------------------------------------------------
 const router = Router();
 // routes
@@ -16,6 +16,7 @@ const router = Router();
 // update blog
 // delete Blog
 // -----------------------------------------------------
+router.use(authenticate);
 router.route("/createBlog").post(createBlog);
 router.route("/getAllBlogs").get(getAllBlogs);
 router.route("/getSingleBlog/:id").get(getSingleBlog);

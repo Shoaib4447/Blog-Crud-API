@@ -18,9 +18,11 @@ app.use(express.static("public"));
 // import routes
 import heathCheckRouter from "./routes/heathCheck.route.js";
 import blogsRouter from "./routes/blog.route.js";
+import authRouter from "./routes/auth.route.js";
 
 // routes
 app.use("/api/v1/heathCheck", heathCheckRouter);
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/blogs", blogsRouter);
 
 // error handler should be the last middleware
