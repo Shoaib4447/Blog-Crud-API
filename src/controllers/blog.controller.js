@@ -4,8 +4,7 @@ import { asyncHandler } from "../utils//asyncHandler.js";
 import Blog from "../models/blog.model.js";
 
 // Impliment express validator
-
-// POST blog
+// POST blog by logged in user only
 const createBlog = asyncHandler(async (req, res) => {
   const { title, content, author } = req.body;
 
@@ -22,6 +21,7 @@ const createBlog = asyncHandler(async (req, res) => {
     title,
     content,
     author,
+    createdBy: req.user,
   });
 
   const createdBlog = await Blog.findById(newBlog._id).select("-__v");
@@ -31,20 +31,51 @@ const createBlog = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, createdBlog, "Blog created successfully"));
 });
 
-// Get All Blogs
+// Get All Blogs by logged in user only
 const getAllBlogs = asyncHandler(async (req, res) => {
-  const allBlogs = await Blog.find().lean();
-  if (allBlogs.length === 0) {
-    return res.status(200).json(new ApiResponse(200, [], "No blogs found yet"));
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * 10;
+  const search = req.query.search || "";
+  const userId = req.user.id;
+
+  // Query
+  let searchQuery = { createdBy: userId };
+
+  if (search) {
+    searchQuery.$text = { $search: search };
   }
-  const data = {
-    totalBlogs: allBlogs.length,
-    allBlogs: allBlogs,
+
+  // Count all blogs
+  const totalBlogs = await Blog.countDocuments(searchQuery);
+
+  // fetch all blog
+  let blogQuery = Blog.find(searchQuery).skip(skip).limit(limit);
+
+  if (search) {
+    blogQuery = blogQuery.sort({ score: { $meta: "textScore" } });
+  } else {
+    blogQuery.sort({ createdAt: -1 });
+  }
+
+  const totalPages = Math.ceil(totalBlogs / limit);
+  const blogs = await blogQuery;
+  const response = {
+    blogs: blogs,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      limit: limit,
+      totalBlogs: totalBlogs,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    },
+    search: search || null,
   };
-  return res.status(200).json(new ApiResponse(200, data, "All Blogs"));
+  return res.status(200).json(new ApiResponse(200, response, "All Blogs"));
 });
 
-// Get Single Blogs
+// Get Single Blogs by logged in user only
 const getSingleBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const blog = await Blog.findById(id).select("-__v");
@@ -54,7 +85,7 @@ const getSingleBlog = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, blog, "Blog Found"));
 });
-// Update Blogs
+// Update Blogs by logged in user only
 const updateBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { title, content, author } = req.body;
@@ -76,7 +107,7 @@ const updateBlog = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, updateBlog, "Updated Blog"));
 });
-// deleteBlog
+// deleteBlog by logged in user only
 const deleteBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const deletedBlog = await Blog.findByIdAndDelete(id);
